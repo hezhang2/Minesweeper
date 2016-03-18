@@ -5,7 +5,7 @@ public final static int NUM_ROWS=20;
 public final static int NUM_COLS=20;
 private MSButton[][] buttons; //2d array of minesweeper buttons
 private ArrayList <MSButton> bombs; //ArrayList of just the minesweeper buttons that are mined
-
+private boolean gameOver=false;
 void setup ()
 {
     size(400, 400);
@@ -37,34 +37,53 @@ public void setBombs()
 public void draw ()
 {
     background( 0 );
-    if(isWon())
+    if(!gameOver&&isWon()){
         displayWinningMessage();
+	}
 }
-public boolean isWon()
-{
-    //your code here
-    return false;
+public boolean isWon(){
+    for(int r=0;r<NUM_ROWS;r++){
+    	for(int c=0;c<NUM_COLS;c++){
+    		if(!bombs.contains(buttons[r][c])&&!buttons[r][c].isKnown()){
+				System.out.println("not yet");
+    			return false;
+    		}
+    	}
+    }
+    System.out.println("you win");
+    return true;
 }
-public void displayLosingMessage()
-{
-    //your code here
+public void displayLosingMessage(){
+    buttons[10][6].setLabel("Y");
+    buttons[10][7].setLabel("O");
+    buttons[10][8].setLabel("U");
+    buttons[10][9].setLabel(" ");
+    buttons[10][10].setLabel("L");
+    buttons[10][11].setLabel("O");
+    buttons[10][12].setLabel("S");
+    buttons[10][13].setLabel("E");
 }
-public void displayWinningMessage()
-{
-    //your code here
+public void displayWinningMessage(){
+    buttons[10][6].setLabel("Y");
+    buttons[10][7].setLabel("O");
+    buttons[10][8].setLabel("U");
+    buttons[10][9].setLabel(" ");
+    buttons[10][10].setLabel("W");
+    buttons[10][11].setLabel("I");
+    buttons[10][12].setLabel("N");
+    buttons[10][13].setLabel("!");
 }
-
 public class MSButton
 {
     private int r, c;
     private float x,y, width, height;
-    private boolean clicked, marked;
+    private boolean clicked, marked, known;
     private String label;
     
     public MSButton ( int rr, int cc )
     {
-         width = 400/NUM_COLS;
-         height = 400/NUM_ROWS;
+        width = 400/NUM_COLS;
+        height = 400/NUM_ROWS;
         r = rr;
         c = cc; 
         x = c*width;
@@ -85,19 +104,28 @@ public class MSButton
     
     public void mousePressed () 
     {
-        clicked = true;
+    	known=true;
         if(keyPressed)
         	marked=!marked;
-        else if(bombs.contains(this))
+        else if(bombs.contains(this)&&gameOver==false){
+        	clicked=true;
+        	for(int r=0;r<NUM_ROWS;r++){
+            	for(int c=0;c<NUM_COLS;c++){
+            		if(!buttons[r][c].isClicked())
+            			buttons[r][c].mousePressed();
+        		}
+        	}
+        	gameOver=true;
         	displayLosingMessage();
-        else if(countBombs(r,c)>0)
+        }else if(countBombs(r,c)>0)
         	setLabel(""+countBombs(r,c));
         else{
+        	clicked=true;
         	if(isValid(r-1,c-1)&&!buttons[r-1][c-1].clicked)
         		buttons[r-1][c-1].mousePressed();
         	if(isValid(r-1,c)&&!buttons[r-1][c].clicked)
         		buttons[r-1][c].mousePressed();
-        	if(isValid(r-1,c+1)&&!buttons[r+1][c].clicked)
+        	if(isValid(r-1,c+1)&&!buttons[r-1][c+1].clicked)
         		buttons[r-1][c+1].mousePressed();
         	if(isValid(r,c-1)&&!buttons[r][c-1].clicked)
         		buttons[r][c-1].mousePressed();
@@ -115,12 +143,16 @@ public class MSButton
     public void draw () {    
         if (marked)
             fill(0);
-        else if( clicked && bombs.contains(this) ) 
-            fill(255,0,0);
+        else if(clicked==true&&bombs.contains(this)) 
+            fill(255,30,30);
+        else if(clicked && r%2==c%2)
+            fill( 140 );
         else if(clicked)
-            fill( 200 );
-        else 
-            fill( 100 );
+             fill(160);
+        else if(r%2==c%2)
+             fill( 100 );
+        else
+        	fill(120);
 
         rect(x, y, width, height);
         fill(0);
@@ -133,6 +165,9 @@ public class MSButton
     	if(r<NUM_ROWS&&r>=0&&c<NUM_COLS&&c>=0)
     		return true;
         return false;
+    }
+    public boolean isKnown(){
+    	return known;
     }
     public int countBombs(int row, int col){
         int numBombs = 0;
