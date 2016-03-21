@@ -141,9 +141,9 @@ public class MSButton
 
     public void draw () {    
         if (marked)
-            fill(0);
+            fill(50);
         else if(clicked==true&&bombs.contains(this)) 
-            fill(255,30,30);
+            fill(230,50,50);
         else if(clicked && r%2==c%2)
             fill( 140 );
         else if(clicked)
